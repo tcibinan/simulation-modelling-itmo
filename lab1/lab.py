@@ -35,11 +35,11 @@ def main():
     states = range(0, 4)
     modelling_steps = 200
     models_number = 100
-    initial_values = (i for i in [42352531])
+    initial_value = 42352531
     numbers_after_dot = 5
 
     # Генераторы случайных величин
-    lcg = LinearCongruentialGenerator(initial_values.__next__())
+    lcg = LinearCongruentialGenerator(initial_value)
 
     # 2. Прогоны модели с начальными значениями, соответствующими состояниям дискретной модели.
     initial_models = [MarkovChain(G, lcg, state) for state in states]
@@ -51,15 +51,19 @@ def main():
     # 3. Отображение диаграмм состояния дискретных марковских цепей.
     show_transition_diagrams(initial_models, [states[0] - 1, states[-1] + 1])
 
-    # 5. Эксперименты для определения стационарного распределения вероятностей дискретной марковской цепи.
-    models = ([MarkovChain(G, lcg, state) for state in states] * (int(models_number / len(states)) + 1))[:models_number]
+    # 5. Эксперименты для определения стационарного распределения вероятностей дискретной
+    # марковской цепи.
+    models = [MarkovChain(G, lcg, state) for state in states]
+    models = models * (int(models_number / len(states)) + 1)
+    models = models[:models_number]
     for index, model in enumerate(models):
         logging.info('%s/%s models has finished.' % (index + 1, len(models)))
         model.model(modelling_steps)
 
     all_transitions = reduce(concat, [model.transitions for model in models])
 
-    stationary_probabilities = [all_transitions.count(state) / len(all_transitions) for state in states]
+    stationary_probabilities = [all_transitions.count(state) / len(all_transitions)
+                                for state in states]
     logging.info('Experiments stationary probabilities = %s.'
                  % list(np.around(stationary_probabilities, numbers_after_dot)))
 
@@ -73,7 +77,8 @@ def main():
     a = np.array(mG)
     b = np.array([0, 0, 0, 1])
     x = np.linalg.solve(a, b)
-    logging.info('Calculated stationary probabilities = %s.' % list(np.around(x, numbers_after_dot)))
+    logging.info('Calculated stationary probabilities = %s.'
+                 % list(np.around(x, numbers_after_dot)))
 
 
 if __name__ == '__main__':

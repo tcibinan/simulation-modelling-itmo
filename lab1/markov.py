@@ -13,7 +13,8 @@ class MarkovChain:
     def model(self, num_steps):
         for step in range(num_steps):
             transitions = self.G[self.state]
-            available_transitions = [(prob, state) for (state, prob) in enumerate(transitions) if prob > 0]
+            available_transitions = [(prob, state) for (state, prob) in enumerate(transitions)
+                                     if prob > 0]
             self.state = self._get_next_state(available_transitions)
             self.transitions.append(self.state)
 
