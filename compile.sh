@@ -22,4 +22,4 @@ fi
 
 docker exec -it latex_daemon pdflatex -output-directory="$OUTPUT_DIRECTORY" \
                                       -jobname="$BUILD_DIRECTORY" \
-                                      "$BUILD_DIRECTORY/docs/main.tex"
+                                      "common/docs/main.tex"

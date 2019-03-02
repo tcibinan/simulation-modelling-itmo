@@ -15,17 +15,15 @@
     basicstyle=\fontsize{0.6em}{0.6em}\ttfamily
 }
 
-\newcommand{\currentpath}{lab1/docs}
-
-\input{\currentpath/../../common/docs/data}
-\input{\currentpath/data}
+\input{\jobname/../common/docs/data}
+\input{\jobname/docs/data}
 
 \begin{document}
 
-    \input{\currentpath/../../common/docs/title}
+    \input{\jobname/../common/docs/title}
 
     \newpage
 
-    \input{\currentpath/report}
+    \input{\jobname/docs/report}
 
 \end{document}
