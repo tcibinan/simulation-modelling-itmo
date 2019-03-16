@@ -7,7 +7,7 @@ import numpy as np
 
 from common.gen import LinearCongruentialGenerator
 from common.log import init_logging
-from lab1.markov import MarkovChain
+from l1_markov.markov import MarkovChain
 
 init_logging()
 
