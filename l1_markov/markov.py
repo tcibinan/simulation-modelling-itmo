@@ -19,13 +19,13 @@ class MarkovChain:
             self.transitions.append(self.state)
 
     def _get_next_state(self, available_transitions):
-        generated_prob = self.lcg.__next__()
+        generated_prob = self.lcg()
         collected_prob = 0
         for (prob, state) in available_transitions:
             collected_prob += prob
             if collected_prob > generated_prob:
                 return state
         logging.warning('Taking the last available state because collected probability differs '
-                        'with generated one:\n%s\n%s'
+                        'with the generated one:\n%s\n%s'
                         % (collected_prob, generated_prob))
         return available_transitions[:-1][1]

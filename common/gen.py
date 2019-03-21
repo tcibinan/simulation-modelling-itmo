@@ -1,3 +1,6 @@
+import logging
+
+
 class LinearCongruentialGenerator:
 
     def __init__(self, ec, m=2 ** 31 - 1, a=630360016):
@@ -8,3 +11,38 @@ class LinearCongruentialGenerator:
     def __next__(self):
         self.ec = (self.a * self.ec) % self.m
         return self.ec / self.m
+
+    def __call__(self):
+        return self.__next__()
+
+
+class IntegerGenerator:
+
+    def __init__(self, probs, lcg):
+        self.probs = probs
+        self.lcg = lcg
+
+    def __next__(self):
+        generated_prob = self.lcg()
+        collected_prob = 0
+        for (integer, prob) in self.probs.items():
+            collected_prob += prob
+            if collected_prob > generated_prob:
+                return integer
+        logging.warning('Taking the last available integer because collected probability differs '
+                        'with the generated one:\n%s\n%s'
+                        % (collected_prob, generated_prob))
+        return self.probs.items[:-1][1]
+
+    def __call__(self):
+        return self.__next__()
+
+    @property
+    def M(self):
+        return sum([integer * prob for integer, prob in self.probs.items()])
+
+    @property
+    def D(self):
+        quad_items = {integer ** 2: prob for integer, prob in self.probs.items()}
+        quad_ig = IntegerGenerator(quad_items, self.lcg)
+        return quad_ig.M - self.M ** 2
