@@ -96,6 +96,7 @@ def main():
             Mp2 = sum([prob ** 2 for prob in probabilities]) / len(probabilities)
             Dp = Mp2 - Mp ** 2
             interval = confidence_interval(Mp, Dp, len(probabilities), t)
+            # TODO 23.03.19: Математическое ожидание для K=1 слишком высокое, при том, что p1 = 0
             logging.info('K = %s; '
                          'M = %s; '
                          'D = %s; '
