@@ -2,7 +2,6 @@ import logging
 import operator
 from datetime import datetime
 from functools import reduce
-from math import log
 
 import matplotlib.pyplot as plt
 import sympy
@@ -11,29 +10,26 @@ import numpy as np
 
 from common.gen import LinearCongruentialGenerator
 from common.log import init_logging
-from l3_pure_birth.birth import PureBirth
+from l3_pure_birth.lab import TimeGenerator
+from l4_birth_death.birth_death import BirthAndDeath
 
-init_logging(file='logs/l3-output-%s.log' % datetime.now())
-
-
-class TimeGenerator:
-
-    def __init__(self, intensity, lcg):
-        self.intensity = intensity
-        self.lcg = lcg
-
-    def __call__(self, k):
-        return - log(self.lcg()) / self.intensity(k)
+init_logging(file='logs/l4-output-%s.log' % datetime.now())
 
 
 def main():
     # Последовательности интенсивности поступления заявок
     k = Symbol('k', real=True)
     lambdas = [
-        sympy.Float(0.95, 2),
-        0.15 * k ** 2 + 4,
-        6.25 / (k + 5)
+        sympy.Float(0.4, 1),
+        1.15 * k ** 3 + 1,
+        0.7 / (k + 12) ** 2
     ]
+    mus = [
+        sympy.Float(0.3, 1),
+        0.33 * k ** 3,
+        5 / k ** 2
+    ]
+    intensities = [_lambda + mu for (_lambda, mu) in zip(lambdas, mus)]
 
     # Конфигурации
     initial_value = 6450435
@@ -45,28 +41,38 @@ def main():
     plot_transitions = [
         np.linspace(0, 15, plot_steps),
         np.linspace(0, 1, plot_steps),
-        np.linspace(0, 30, plot_steps)
+        np.linspace(0, 100, plot_steps)
     ]
 
     # Диаграммы состояний процессов
     logging.info('Generating initial state diagrams for all models...')
     fig, axes = plt.subplots(1, 3)
-    for index, lambda_ in enumerate(lambdas):
-        pb = PureBirth(tg=TimeGenerator(intensity=lambda arg: lambda_.subs(k, arg), lcg=lcg))
+    for index, funcs in enumerate(zip(lambdas, mus, intensities)):
+        lambda_, mu, intensity = funcs
+        pb = BirthAndDeath(lcg=lcg,
+                           tg=TimeGenerator(intensity=lambda arg: intensity.subs(k, arg),
+                                            lcg=lcg),
+                           lambda_=lambda arg: lambda_.subs(k, arg),
+                           mu=lambda arg: mu.subs(k, arg))
         pb.model(max_steps=modelling_states)
         ax1 = axes[index]
         ax1.plot(pb.transitions, pb.states, drawstyle='steps')
-        ax1.set_title('lambda=%s' % lambda_)
+        ax1.set_title('lambda=%s\nmu=%s' % (lambda_, mu))
     plt.show()
 
     # Прогоны каждой из моделей
-    for lambda_, all_transitions in zip(lambdas, plot_transitions):
-        logging.info('Starting to process a model with lambda=%s.' % lambda_)
-        pbs = [PureBirth(tg=TimeGenerator(intensity=lambda arg: lambda_.subs(k, arg), lcg=lcg))
+    for lambda_, mu, intensity, all_transitions \
+            in zip(lambdas, mus, intensities, plot_transitions):
+        logging.info('Starting to process a model with lambda=%s and mu=%s.' % (lambda_, mu))
+        pbs = [BirthAndDeath(lcg=lcg,
+                             tg=TimeGenerator(intensity=lambda arg: intensity.subs(k, arg),
+                                              lcg=lcg),
+                             lambda_=lambda arg: lambda_.subs(k, arg),
+                             mu=lambda arg: mu.subs(k, arg))
                for _ in range(experiments_number)]
         logging.info('Performing %s experiments...' % experiments_number)
         for pb in pbs:
-            pb.model(max_transition=all_transitions[len(all_transitions)-1],
+            pb.model(max_transition=all_transitions[len(all_transitions) - 1],
                      max_steps=max_modelling_states)
         all_states = []
         logging.info('Collecting transitions for %s periods...' % len(all_transitions))
