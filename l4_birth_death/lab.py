@@ -33,9 +33,11 @@ def main():
 
     # Конфигурации
     initial_value = 6450435
+    numbers_after_dot = 5
     lcg = LinearCongruentialGenerator(initial_value)
     modelling_states = 11
     max_modelling_states = 50
+    pi_epsilon = 0.00001
     experiments_number = 200
     plot_steps = 200
     plot_transitions = [
@@ -113,6 +115,23 @@ def main():
         ax2.plot(all_transitions, all_M, all_transitions, all_D)
         ax2.legend(['M(X)', 'D(X)'], loc='upper left')
         plt.show()
+
+        # Расчет финальных вероятностей
+        pi = [1]
+        for state in range(1, max_modelling_states):
+            numerator = 1
+            denominator = 1
+            for inner_state in range(1, state):
+                numerator *= lambda_.subs(k, inner_state)
+                denominator *= mu.subs(k, inner_state)
+            pi.append(numerator / denominator)
+            if state > modelling_states and abs(pi[-1] - pi[-2]) < pi_epsilon:
+                break
+        pi_sum = sum(pi)
+        logging.info('Listing final probabilities calculated for first %s states...' % len(pi))
+        for state in range(modelling_states):
+            state_p = pi[state]/pi_sum
+            logging.info('p%s =\t%s' % (state, np.around(float(state_p), numbers_after_dot)))
 
 
 if __name__ == '__main__':
