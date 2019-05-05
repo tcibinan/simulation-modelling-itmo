@@ -13,8 +13,6 @@ from common.gen import LinearCongruentialGenerator
 from common.log import init_logging
 from l3_pure_birth.birth import PureBirth
 
-init_logging(file='logs/l3-output-%s.log' % datetime.now())
-
 
 class TimeGenerator:
 
@@ -27,6 +25,8 @@ class TimeGenerator:
 
 
 def main():
+    init_logging(file='logs/l3-output-%s.log' % datetime.now())
+
     # Последовательности интенсивности поступления заявок
     k = Symbol('k', real=True)
     lambdas = [
@@ -66,7 +66,7 @@ def main():
                for _ in range(experiments_number)]
         logging.info('Performing %s experiments...' % experiments_number)
         for pb in pbs:
-            pb.model(max_transition=all_transitions[len(all_transitions)-1],
+            pb.model(max_transition=all_transitions[len(all_transitions) - 1],
                      max_steps=max_modelling_states)
         all_states = []
         logging.info('Collecting transitions for %s periods...' % len(all_transitions))

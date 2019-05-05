@@ -13,10 +13,10 @@ from common.log import init_logging
 from l3_pure_birth.lab import TimeGenerator
 from l4_birth_death.birth_death import BirthAndDeath
 
-init_logging(file='logs/l4-output-%s.log' % datetime.now())
-
 
 def main():
+    init_logging(file='logs/l4-output-%s.log' % datetime.now())
+
     # Последовательности интенсивности поступления заявок
     k = Symbol('k', real=True)
     lambdas = [
