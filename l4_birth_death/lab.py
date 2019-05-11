@@ -36,13 +36,13 @@ def main():
     numbers_after_dot = 5
     lcg = LinearCongruentialGenerator(initial_value)
     modelling_states = 11
-    max_modelling_states = 50
+    max_modelling_states = 1000
     pi_epsilon = 0.00001
     experiments_number = 200
     plot_steps = 200
     plot_transitions = [
         np.linspace(0, 15, plot_steps),
-        np.linspace(0, 1, plot_steps),
+        np.linspace(0, 0.35, plot_steps),
         np.linspace(0, 100, plot_steps)
     ]
 
@@ -56,7 +56,7 @@ def main():
                                             lcg=lcg),
                            lambda_=lambda arg: lambda_.subs(k, arg),
                            mu=lambda arg: mu.subs(k, arg))
-        pb.model(max_steps=modelling_states)
+        pb.model(max_iterations=modelling_states)
         ax1 = axes[index]
         ax1.plot(pb.transitions, pb.states, drawstyle='steps')
         ax1.set_title('lambda=%s\nmu=%s' % (lambda_, mu))
@@ -73,21 +73,27 @@ def main():
                              mu=lambda arg: mu.subs(k, arg))
                for _ in range(experiments_number)]
         logging.info('Performing %s experiments...' % experiments_number)
-        for pb in pbs:
+        for index, pb in enumerate(pbs):
+            if index % 10 == 0:
+                logging.debug('%s experiments were performed...' % index)
             pb.model(max_transition=all_transitions[len(all_transitions) - 1],
                      max_steps=max_modelling_states)
+        logging.debug('All experiments were performed.')
         all_states = []
         logging.info('Collecting transitions for %s periods...' % len(all_transitions))
-        for transition in all_transitions:
+        for index, transition in enumerate(all_transitions):
+            if index % 10 == 0:
+                logging.debug('%s transitions were collected...' % index)
             states = []
             for pb in pbs:
                 state = None
-                for index, pb_transition in enumerate(pb.transitions):
+                for pb_index, pb_transition in enumerate(pb.transitions):
                     if pb_transition > transition:
-                        state = index - 1
+                        state = pb.states[pb_index]
                         break
-                states.append(state if state is not None else len(pb.transitions))
+                states.append(state if state is not None else pb.states[-1])
             all_states.append(states)
+        logging.debug('All transitions were collected.')
 
         logging.info('Calculating state probabilities...')
         # Расчет вероятностей каждого из событий
@@ -108,12 +114,14 @@ def main():
             all_D.append(M2 - M ** 2)
 
         logging.info('Generating plot for state probabilities, M and D...')
-        fig, (ax1, ax2) = plt.subplots(1, 2)
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
         ax1.plot(*prob_plots)
         ax1.legend(['P(X(t)=%s)' % state for state in range(modelling_states)], loc='upper center',
                    ncol=2)
-        ax2.plot(all_transitions, all_M, all_transitions, all_D)
-        ax2.legend(['M(X)', 'D(X)'], loc='upper left')
+        ax2.plot(all_transitions, all_M)
+        ax2.legend(['M(X)'], loc='upper left')
+        ax3.plot( all_transitions, all_D)
+        ax3.legend(['D(X)'], loc='upper left')
         plt.show()
 
         # Расчет финальных вероятностей

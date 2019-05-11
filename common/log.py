@@ -10,4 +10,5 @@ def init_logging(debug=False, file=None):
         if dirname:
             os.makedirs(dirname, exist_ok=True)
         handlers.append(logging.FileHandler(file))
-    logging.basicConfig(level=level, format='%(asctime)s %(message)s', handlers=handlers)
+    logging.basicConfig(level=level, format='[%(levelname)s\t%(asctime)s] %(message)s',
+                        handlers=handlers)

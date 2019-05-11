@@ -8,11 +8,12 @@ class BirthAndDeath:
         self.lambda_ = lambda_
         self.mu = mu
 
-    def model(self, max_steps=None, max_transition=None):
+    def model(self, max_steps=None, max_transition=None, max_iterations=None):
         while True:
             latest_transition = self.transitions[-1]
             if max_transition and latest_transition >= max_transition \
-                    or max_steps and len(self.transitions) >= max_steps:
+                    or max_steps and self.states[-1] >= max_steps \
+                    or max_iterations and len(self.transitions) >= max_iterations:
                 return
             transition = self.tg(len(self.transitions))
             self.transitions += [self.transitions[-1] + transition]
