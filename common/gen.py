@@ -1,5 +1,9 @@
 import logging
 
+import scipy
+import scipy.stats
+from math import sqrt
+
 
 class LinearCongruentialGenerator:
 
@@ -46,3 +50,31 @@ class IntegerGenerator:
         quad_items = {integer ** 2: prob for integer, prob in self.probs.items()}
         quad_ig = IntegerGenerator(quad_items, self.lcg)
         return quad_ig.M - self.M ** 2
+
+
+class UniformGenerator:
+
+    def __init__(self, lcg, min, max):
+        self._lcg = lcg
+        self._min = min
+        self._max = max
+
+    def __next__(self):
+        return self._min + self._lcg() * (self._max - self._min)
+
+    def __call__(self):
+        return self.__next__()
+
+
+class NormalGenerator:
+
+    def __init__(self, lcg, mu, sigma):
+        self._lcg = lcg
+        self._mu = mu
+        self._sigma = sigma
+
+    def __next__(self):
+        return scipy.stats.norm.ppf(self._lcg()) * self._sigma + self._mu
+
+    def __call__(self):
+        return self.__next__()
